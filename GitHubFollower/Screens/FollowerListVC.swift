@@ -206,7 +206,7 @@ extension FollowerListVC: UISearchResultsUpdating, UISearchBarDelegate {
    
 }
 
-extension FollowerListVC: FollowerListVCDelegate {
+extension FollowerListVC: UserinfoVCDelegate {
     func didRequestFollowers(for username: String) {
         // get followers for the user
         self.username = username

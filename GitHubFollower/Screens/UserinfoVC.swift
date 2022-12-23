@@ -8,12 +8,14 @@
 import UIKit
 import SafariServices
 
-protocol UserInfoVCDelegate: class {
-    func didTapGitHubProfile(for user: User)
-    func didTapGetFollowers(for user: User)
+protocol UserinfoVCDelegate : class {
+    func didRequestFollowers(for username: String)
 }
 
 class UserinfoVC: GFDataLoadingVC {
+    
+    let scrollView = UIScrollView()
+    let contentView = UIView()
     
     let headerView = UIView()
     let itemViewOne = UIView()
@@ -23,17 +25,29 @@ class UserinfoVC: GFDataLoadingVC {
     
     
     var username: String!
-    weak var delegate: FollowerListVCDelegate!
+    weak var delegate: UserinfoVCDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         configureViewController()
+        configureScrollView()
         layoutUI()
         getUserInfo()
         
         
     }
     
+    func configureScrollView() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        scrollView.pinToEdges(of: view)
+        contentView.pinToEdges(of: scrollView)
+        
+        NSLayoutConstraint.activate([
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 650)
+        ])
+    }
     func configureViewController() {
         view.backgroundColor = .systemBackground
         let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dismissVC))
@@ -63,23 +77,22 @@ class UserinfoVC: GFDataLoadingVC {
     }
     
     func configureUIElements(with user:User) {
-        let repoItemVC = GFRepoItemVC(user: user)
-        repoItemVC.delegate = self
         
         let followerItemVC = GFFollowerItemVC(user: user)
         followerItemVC.delegate = self
         
         self.add(childVC: GFUserinfoHeaderVC(user: user), to: self.headerView)
-        self.add(childVC: repoItemVC, to: self.itemViewOne)
+        self.add(childVC: GFRepoItemVC(user: user, delegate: self), to: self.itemViewOne)
         self.add(childVC: followerItemVC, to: self.itemViewTwo)
         self.dateLable.text = "GitHub since \(user.createdAt.convertTODisplayFormat())"
        // self.dateLable.text = "GitHub since \( user.createdAt.convertToMonthYearFormat())"
         }
 
     func layoutUI() {
+        
         itemViews = [headerView, itemViewOne, itemViewTwo, dateLable]
         for itemView in itemViews {
-            view.addSubview(itemView)
+            contentView.addSubview(itemView)
             itemView.translatesAutoresizingMaskIntoConstraints = false
         }
 
@@ -90,25 +103,25 @@ class UserinfoVC: GFDataLoadingVC {
         let itemHeight: CGFloat = 140
         
         NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            headerView.heightAnchor.constraint(equalToConstant: 180),
+            headerView.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 210),
             
             itemViewOne.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: padding),
-            itemViewOne.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            itemViewOne.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            itemViewOne.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            itemViewOne.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             itemViewOne.heightAnchor.constraint(equalToConstant: itemHeight),
             
             itemViewTwo.topAnchor.constraint(equalTo: itemViewOne.bottomAnchor, constant: padding),
-            itemViewTwo.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            itemViewTwo.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            itemViewTwo.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            itemViewTwo.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             itemViewTwo.heightAnchor.constraint(equalToConstant: itemHeight),
             
-            dateLable.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            dateLable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            dateLable.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            dateLable.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             dateLable.topAnchor.constraint(equalTo: itemViewTwo.bottomAnchor, constant: padding),
-            dateLable.heightAnchor.constraint(equalToConstant: 18)
+            dateLable.heightAnchor.constraint(equalToConstant: 50)
             
         ])
     }
@@ -123,7 +136,8 @@ class UserinfoVC: GFDataLoadingVC {
 
 }
 
-extension UserinfoVC: UserInfoVCDelegate {
+extension UserinfoVC: GFRepoItemVCDelegate {
+    
     func didTapGitHubProfile(for user: User) {
         guard let url = URL(string: user.htmlUrl) else {
             presentGFAlertOnMainThread(title: "Invalid URL", message: "The url attached to this user is invalid", buttonTitle: "OK")
@@ -131,10 +145,11 @@ extension UserinfoVC: UserInfoVCDelegate {
         }
         presentSafariVC(with: url)
     }
-        
+}
+
+extension UserinfoVC: GFFollowerItemVCDelegate {
     
     func didTapGetFollowers(for user: User) {
-        
         guard user.followers != 0 else {
             presentGFAlertOnMainThread(title: "No Follower", message: "This user has no follower", buttonTitle: "OK")
             return
@@ -142,7 +157,5 @@ extension UserinfoVC: UserInfoVCDelegate {
         delegate.didRequestFollowers(for: user.login)
         dismissVC()
     }
-    
-   
-    
 }
+

@@ -21,10 +21,12 @@ class SearchVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground // it adjust D/L mode
+        view.addSubViews(logoImageView,userNameTextField,callToActionButton)
         configureLogoImageView()
         configureTextField()
         configureCallToActionButton()
         createDismissKeyboardTapGesture()
+        
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -51,7 +53,6 @@ class SearchVC: UIViewController {
     
     
     func configureLogoImageView() {
-        view.addSubview(logoImageView)
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         logoImageView.image = Image.ghLogo
         
@@ -68,7 +69,6 @@ class SearchVC: UIViewController {
     }
     
     func configureTextField() {
-        view.addSubview(userNameTextField)
         userNameTextField.delegate = self
         userNameTextField.text = "SAllen0400"
         userNameTextField.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +82,6 @@ class SearchVC: UIViewController {
     }
 
     func configureCallToActionButton() {
-        view.addSubview(callToActionButton)
         callToActionButton.addTarget(self, action: #selector(pushFollowerListVC), for: .touchUpInside)
         NSLayoutConstraint.activate([
             callToActionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),

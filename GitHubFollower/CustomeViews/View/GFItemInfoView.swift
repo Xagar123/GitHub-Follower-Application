@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 class GFItemInfoView: UIView {
 
     enum ItemInfoType {
@@ -26,11 +27,7 @@ class GFItemInfoView: UIView {
     }
     
     private func configure() {
-        addSubview(symbolImageView)
-        addSubview(titleLable)
-        addSubview(countLable)
-        
-       
+        addSubViews(symbolImageView,titleLable,countLable)
         symbolImageView.translatesAutoresizingMaskIntoConstraints = false
         symbolImageView.contentMode = .scaleAspectFill
         symbolImageView.tintColor = .label
